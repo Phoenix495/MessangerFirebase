@@ -25,6 +25,9 @@ class MessageController: UITableViewController {
         
         checkIfUserLogin()
 //        observeMessages()
+        
+        tableView.allowsMultipleSelectionDuringEditing = true
+        
     }
     
     var messages = [Message]()
@@ -229,8 +232,15 @@ class MessageController: UITableViewController {
             self.showChatLogControllerFor(user: user)
             
         }, withCancel: nil)
-        
-        
     }
+    
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        print(indexPath.row)
+    }
+    
 }
 

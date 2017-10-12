@@ -7,10 +7,13 @@
 //
 
 import UIKit
+import AVFoundation
 
 class ChatMessageCell: UICollectionViewCell {
     
     var chatLogController: ChatLogController?
+
+    var message: Message?
     
     let textView: UITextView = {
         let view = UITextView()
@@ -55,11 +58,54 @@ class ChatMessageCell: UICollectionViewCell {
         return view
     }()
     
+    lazy var playButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(named: "play_button"), for: .normal)
+        button.tintColor = UIColor.white
+        button.addTarget(self, action: #selector(handlePlay), for: .touchUpInside)
+        return button
+    }()
+    
+    let activityIndicator: UIActivityIndicatorView = {
+        let aiv = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
+        aiv.translatesAutoresizingMaskIntoConstraints = false
+        return aiv
+    }()
+    
     func handleZoomImage(tapGesture: UITapGestureRecognizer) {
         
         if let imageView = tapGesture.view as? UIImageView {
             chatLogController?.performZoomInForStartingImageView(imageView)
         }
+    }
+    
+    var playerlayer: AVPlayerLayer?
+    var player:AVPlayer?
+    
+    func handlePlay() {
+    
+        if let urlString = message?.videoURL, let url = URL(string: urlString) {
+            
+            player = AVPlayer(url: url)
+            playerlayer = AVPlayerLayer(player: player)
+            playerlayer?.frame = bubleView.bounds
+            bubleView.layer.addSublayer(playerlayer!)
+            
+            player?.play()
+            
+            activityIndicator.startAnimating()
+            playButton.isHidden = true
+        }
+        
+    }
+    
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        playerlayer?.removeFromSuperlayer()
+        player?.pause()
+        activityIndicator.stopAnimating()
     }
     
     override init(frame: CGRect) {
@@ -107,6 +153,19 @@ class ChatMessageCell: UICollectionViewCell {
         profileImage.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         profileImage.widthAnchor.constraint(equalToConstant: 32).isActive = true
         profileImage.heightAnchor.constraint(equalToConstant: 32).isActive = true
+        
+        
+        bubleView.addSubview(playButton)
+        playButton.centerXAnchor.constraint(equalTo: bubleView.centerXAnchor).isActive = true
+        playButton.centerYAnchor.constraint(equalTo: bubleView.centerYAnchor).isActive = true
+        playButton.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        playButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        bubleView.addSubview(activityIndicator)
+        activityIndicator.centerXAnchor.constraint(equalTo: bubleView.centerXAnchor).isActive = true
+        activityIndicator.centerYAnchor.constraint(equalTo: bubleView.centerYAnchor).isActive = true
+        activityIndicator.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        activityIndicator.heightAnchor.constraint(equalToConstant: 50).isActive = true
     }
     
 }
