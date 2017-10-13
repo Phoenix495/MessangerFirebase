@@ -63,6 +63,11 @@ class MessageController: UITableViewController {
                 }, withCancel: nil)
             }, withCancel: nil)
         }, withCancel: nil)
+        
+        ref.observe(.childRemoved, with: { (snapshot) in
+            self.messagesDictionary.removeValue(forKey: snapshot.key)
+            self.updateTableView()
+        }, withCancel: nil)
     }
     
     var timer: Timer?
@@ -239,7 +244,22 @@ class MessageController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        print(indexPath.row)
+
+        guard let uid = Auth.auth().currentUser?.uid else {return}
+        let message = messages[indexPath.row]
+        
+        guard let chatPartnerID = message.chatPartnerID() else {return}
+        
+        Database.database().reference().child("user-messages").child(uid).child(chatPartnerID).removeValue { (error, ref) in
+            if error != nil {
+                print(error as Any)
+                return
+            }
+            
+            self.messagesDictionary.removeValue(forKey: chatPartnerID)
+            self.updateTableView()
+        }
+        
     }
     
 }
